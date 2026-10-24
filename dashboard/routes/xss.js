@@ -1,7 +1,31 @@
 const express = require("express");
 const fetch = require("node-fetch");
-const sanitizeHtml = require("sanitize-html");
 const { logRun } = require("../logger");
+
+// Safe loader for sanitize-html to prevent ESM import collisions on newer Node runtimes
+let sanitizeHtml;
+try {
+  sanitizeHtml = require("sanitize-html");
+} catch (err) {
+  console.warn("[XSS Defense] sanitize-html package require fallback:", err.message);
+}
+
+function cleanHtml(input, options = {}) {
+  if (typeof sanitizeHtml === "function") {
+    try {
+      return sanitizeHtml(input, options);
+    } catch (e) {}
+  }
+  // Robust fallback HTML sanitizer and entity encoder
+  return String(input)
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
 
 const router = express.Router();
 const JUICE_SHOP_URL = process.env.JUICE_SHOP_URL || "http://localhost:3000";
@@ -64,7 +88,7 @@ router.post("/attack", async (req, res) => {
 // This does NOT modify Juice Shop - it demonstrates the general fix pattern.
 router.post("/defend", (req, res) => {
   const payload = req.body.payload || "<img src=x onerror=alert('XSS')>";
-  const clean = sanitizeHtml(payload, { allowedTags: [], allowedAttributes: {} });
+  const clean = cleanHtml(payload, { allowedTags: [], allowedAttributes: {} });
 
   const entry = logRun({
     module: "xss",

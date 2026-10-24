@@ -13,5 +13,8 @@
     "bcryptjs": "^2.4.3",
     "express-rate-limit": "^7.2.0",
     "sanitize-html": "^2.13.0"
+  },
+  "overrides": {
+    "htmlparser2": "9.1.0"
   }
 }
