@@ -3,8 +3,9 @@ services:
     name: ehva-cyberlab
     env: node
     plan: free
-    buildCommand: cd dashboard && npm install
-    startCommand: cd dashboard && node server.js
+    rootDir: dashboard
+    buildCommand: npm install
+    startCommand: node server.js
     envVars:
       - key: NODE_VERSION
         value: 20.0.0

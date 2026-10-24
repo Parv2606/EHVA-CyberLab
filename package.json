@@ -4,7 +4,8 @@
   "private": true,
   "description": "EHVA CyberLab - Web Security Attack & Defense Hub with simulated OWASP Juice Shop target",
   "scripts": {
-    "start": "npm start --prefix dashboard",
+    "build": "cd dashboard && npm install",
+    "start": "cd dashboard && node server.js",
     "install:dashboard": "npm install --prefix dashboard"
   }
 }
