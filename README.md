@@ -4,9 +4,12 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 [![Express](https://img.shields.io/badge/Express-4.x-lightgrey.svg)](https://expressjs.com/)
 [![Target: OWASP Juice Shop](https://img.shields.io/badge/Target-OWASP%20Juice%20Shop-orange.svg)](https://owasp.org/www-project-juice-shop/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-brightgreen.svg)](https://ehva-cyberlab.onrender.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 An interactive, educational web security training dashboard and attack/defense evaluation suite designed for vulnerability assessment, penetration testing demonstrations, and defensive mitigation verification.
+
+> 🌐 **Live Demo:** Access the deployed cloud application at **[https://ehva-cyberlab.onrender.com/](https://ehva-cyberlab.onrender.com/)**
 
 ---
 
