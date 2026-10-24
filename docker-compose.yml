@@ -1,0 +1,39 @@
+# Isolation model:
+# - Juice Shop and the dashboard run on a private Docker bridge network.
+# - Juice Shop publishes NO port to your host - it is reachable only from
+#   the dashboard container, via Docker's internal DNS (http://juice-shop:3000).
+# - The dashboard publishes ONLY to 127.0.0.1:8080 - not your LAN, not the internet.
+# - No code here touches your host filesystem or any external host at runtime.
+#   The only outbound network activity is Docker pulling the Juice Shop image
+#   once, and the nmap scanner (restricted to the internal juice-shop host only).
+
+services:
+  juice-shop:
+    image: bkimminich/juice-shop
+    container_name: juice-shop
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - labnet
+    restart: unless-stopped
+
+  dashboard:
+    build: ./dashboard
+    container_name: security-dashboard
+    depends_on:
+      - juice-shop
+    environment:
+      - JUICE_SHOP_URL=http://juice-shop:3000
+      - JUICE_SHOP_HOST=juice-shop
+      - PORT=8080
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./dashboard/public:/app/public
+    networks:
+      - labnet
+    restart: unless-stopped
+
+networks:
+  labnet:
+    driver: bridge

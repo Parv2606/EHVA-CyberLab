@@ -1,0 +1,17 @@
+{
+  "name": "security-dashboard",
+  "version": "1.0.0",
+  "description": "Educational attack/defense dashboard for XSS, SQLi, CSRF, weak auth, and missing headers, using OWASP Juice Shop as a live target.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-fetch": "^2.7.0",
+    "helmet": "^7.1.0",
+    "bcryptjs": "^2.4.3",
+    "express-rate-limit": "^7.2.0",
+    "sanitize-html": "^2.13.0"
+  }
+}

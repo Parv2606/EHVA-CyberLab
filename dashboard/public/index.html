@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EHVA • Cyber Security Lab — Attack & Defense Hub</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Header & Top Navigation Bar -->
+<header>
+  <div class="header-left">
+    <div class="brand-shield">🛡️</div>
+    <div class="brand-titles">
+      <h1>EHVA CyberLab</h1>
+      <p class="subtitle">Web Security Attack & Defense Hub • Target: OWASP Juice Shop & Isolated Sandboxes</p>
+    </div>
+  </div>
+  
+  <div class="header-right">
+    <div class="target-quick-status" title="Target application status">
+      <span class="status-dot dot-online" id="global-status-dot"></span>
+      <span id="global-status-text">Target: http://localhost:3000 (Juice Box)</span>
+    </div>
+    <button class="btn-target-stage" onclick="openJuiceShopPreview()" id="btn-open-target-stage" title="Open Target Spotlight / Juice Box Window">
+      🍹 Juice Box Live Stage
+    </button>
+    <button class="btn-theme-toggle" onclick="toggleDarkMode()" id="btn-theme-toggle" title="Toggle Light / Dark mode">
+      <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
+    </button>
+  </div>
+</header>
+
+<!-- Hero Metrics Ribbon -->
+<div class="hero-stats-ribbon">
+  <div class="stat-card">
+    <div class="stat-icon icon-blue">🎯</div>
+    <div class="stat-info">
+      <div class="stat-value">7 Modules</div>
+      <div class="stat-label">Assessment Lab</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon icon-red">⚠️</div>
+    <div class="stat-info">
+      <div class="stat-value" id="stat-vulns-found">0</div>
+      <div class="stat-label">Exploits Logged</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon icon-green">🛡️</div>
+    <div class="stat-info">
+      <div class="stat-value" id="stat-defenses-verified">0</div>
+      <div class="stat-label">Defenses Verified</div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation Tabs -->
+<nav id="tabs">
+  <button class="tab-btn active" data-tab="xss">XSS</button>
+  <button class="tab-btn" data-tab="sqli">SQL Injection</button>
+  <button class="tab-btn" data-tab="cmdi">Command Injection</button>
+  <button class="tab-btn" data-tab="csrf">CSRF</button>
+  <button class="tab-btn" data-tab="weakauth">Weak Auth</button>
+  <button class="tab-btn" data-tab="headers">Security Headers</button>
+  <button class="tab-btn" data-tab="scanner">Nmap Scanner</button>
+  <button class="tab-btn" data-tab="report">Audit Report</button>
+</nav>
+
+<main>
+
+<!-- ======================================================================= -->
+<!-- 1. XSS (Cross-Site Scripting) -->
+<!-- ======================================================================= -->
+<section class="tab-panel active" id="xss">
+  <div class="panel-header-block">
+    <div class="panel-title-row">
+      <h2>Cross-Site Scripting (XSS)</h2>
+      <span class="owasp-tag">OWASP A03:2021 — Injection</span>
+    </div>
+    <p class="panel-desc">When a website accidentally runs harmful script code submitted by a user instead of displaying it safely as plain text.</p>
+  </div>
+
+  <div class="explanation-box">
+    <div class="explanation-header" onclick="toggleAccordion('exp-xss')">
+      <h3>How Cross-Site Scripting (XSS) Works & How to Fix It</h3>
+      <span class="accordion-arrow">▾</span>
+    </div>
+    <div class="explanation-body" id="exp-xss">
+      <p><strong>In Simple Words (What is it?):</strong> Think of a guestbook where people write their names. If someone writes a command like <em>"steal everyone's keys"</em>, and the host blindly shouts that command and obeys it, that is what happens in XSS. When a website accepts user input (like a search keyword) and displays it directly on the screen without checking it, an attacker can type code like <code>&lt;img src=x onerror=alert('Hacked')&gt;</code>. The visitor's browser thinks the code came from the website and runs it immediately.</p>
+      <ul>
+        <li><strong>Why is it dangerous?</strong> The attacker's hidden script can steal login tokens, read private cookies, log whatever the user types, or redirect visitors to fake phishing websites.</li>
+        <li><strong>How do we fix it?</strong> Never insert raw user input directly into HTML. Convert special characters (like <code>&lt;</code>, <code>&gt;</code>, <code>"</code>) into harmless text codes, or use safe functions like <code>textContent</code> and sanitizers like <code>DOMPurify</code> so the browser treats the input strictly as text, never as executable code.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel attack">
+      <div class="panel-header-badge">
+        <h3>Attack Vector</h3>
+        <span class="mode-badge badge-attack">Unescaped Reflection</span>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="xss-payload">XSS Injection Payload</label>
+        <input type="text" id="xss-payload" value="&lt;img src=x onerror=alert('XSS')&gt;">
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn-run-attack" onclick="run('xss','attack')">Run Attack</button>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="terminal-title">HTTP Response (Target Search API)</span>
+          <button type="button" class="btn-copy-output" onclick="copyPre('xss-attack-out')">Copy</button>
+        </div>
+        <pre id="xss-attack-out"></pre>
+      </div>
+    </div>
+
+    <div class="panel defend">
+      <div class="panel-header-badge">
+        <h3>Defense & Remediation</h3>
+        <span class="mode-badge badge-defend">Sanitization Applied</span>
+      </div>
+      <p class="hint">Passes the same payload through <code>sanitize-html</code> to strip dangerous tags and executable event handlers before HTML rendering.</p>
+      
+      <div class="btn-row">
+        <button type="button" class="btn-run-defend" onclick="run('xss','defend')">Run Defense</button>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="terminal-title">Sanitized Output</span>
+          <button type="button" class="btn-copy-output" onclick="copyPre('xss-defend-out')">Copy</button>
+        </div>
+        <pre id="xss-defend-out"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================= -->
+<!-- 2. SQL Injection -->
+<!-- ======================================================================= -->
+<section class="tab-panel" id="sqli">
+  <div class="panel-header-block">
+    <div class="panel-title-row">
+      <h2>SQL Injection (SQLi)</h2>
+      <span class="owasp-tag">OWASP A03:2021 — Injection</span>
+    </div>
+    <p class="panel-desc">When an application pastes user input directly into a database query, allowing an attacker to manipulate the query logic.</p>
+  </div>
+
+  <div class="explanation-box">
+    <div class="explanation-header" onclick="toggleAccordion('exp-sqli')">
+      <h3>How SQL Injection Works & How to Fix It</h3>
+      <span class="accordion-arrow">▾</span>
+    </div>
+    <div class="explanation-body" id="exp-sqli">
+      <p><strong>In Simple Words (What is it?):</strong> Think of a database as a digital filing cabinet, and a login query as asking: <em>"Find the user whose email is Alice AND whose password is correct."</em> In a vulnerable application, user input is pasted directly into that question. An attacker enters <code>' OR 1=1--</code>. The question becomes: <em>"Find the user whose email is Alice OR where 1 equals 1"</em>. Because 1 always equals 1, the database says <em>"Condition met!"</em> and logs the attacker in as Administrator without checking any password.</p>
+      <ul>
+        <li><strong>Why is it dangerous?</strong> Attackers can bypass authentication to log in as any user or admin, read the entire database of customer records, modify sensitive tables, or delete data.</li>
+        <li><strong>How do we fix it?</strong> Use Parameterized Queries (Prepared Statements). The database engine separates the SQL query logic from the user data, ensuring that quotes and commands in user input are treated purely as text data, never as executable SQL instructions.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel attack">
+      <div class="panel-header-badge">
+        <h3>Attack Vector</h3>
+        <span class="mode-badge badge-attack">Auth Bypass Logic</span>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="sqli-email">SQLi Email Input</label>
+        <input type="text" id="sqli-email" value="' OR 1=1--">
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="sqli-password">Password (Any dummy value)</label>
+        <input type="text" id="sqli-password" value="anything">
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn-run-attack" onclick="runSqli('attack')">Run Attack</button>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="terminal-title">Auth Response & Token Dump</span>
+          <button type="button" class="btn-copy-output" onclick="copyPre('sqli-attack-out')">Copy</button>
+        </div>
+        <pre id="sqli-attack-out"></pre>
+      </div>
+    </div>
+
+    <div class="panel defend">
+      <div class="panel-header-badge">
+        <h3>Defense & Remediation</h3>
+        <span class="mode-badge badge-defend">Parameterized Binding</span>
+      </div>
+      <p class="hint">Executes the same query against a parameterized mock database lookup. The payload is treated strictly as a literal username string, not SQL syntax.</p>
+      
+      <div class="btn-row">
+        <button type="button" class="btn-run-defend" onclick="runSqli('defend')">Run Defense</button>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="terminal-title">Protected Lookup Response</span>
+          <button type="button" class="btn-copy-output" onclick="copyPre('sqli-defend-out')">Copy</button>
+        </div>
+        <pre id="sqli-defend-out"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================= -->
+<!-- ======================================================================= -->
+<!-- 3. Command Injection -->
+<!-- ======================================================================= -->
+<section class="tab-panel" id="cmdi">
+  <div class="panel-header-block">
+    <div class="panel-title-row">
+      <h2>OS Command Injection (RCE)</h2>
+      <span class="owasp-tag">OWASP A03:2021 — Injection</span>
+    </div>
+    <p class="panel-desc">When an application lets user input trigger unauthorized terminal commands directly on the server computer.</p>
+  </div>
+
+  <div class="explanation-box">
+    <div class="explanation-header" onclick="toggleAccordion('exp-cmdi')">
+      <h3>How OS Command Injection Works & How to Fix It</h3>
+      <span class="accordion-arrow">▾</span>
+    </div>
+    <div class="explanation-body" id="exp-cmdi">
+      <p><strong>In Simple Words (What is it?):</strong> Imagine an app that lets administrators ping a server by typing an IP address like <code>127.0.0.1</code>. The server runs that in its background terminal. If the app blindly pastes the text into the terminal without checking it, an attacker can append <code>; whoami</code>. The server will ping the address and then immediately execute the second command (<code>whoami</code>) on its operating system!</p>
+      <ul>
+        <li><strong>Why is it dangerous?</strong> This grants direct Remote Code Execution (RCE). An attacker can read confidential server files, install backdoors, download unauthorized scripts, or take complete control over the entire machine.</li>
+        <li><strong>How do we fix it?</strong> Never pass user input to a command shell. Strictly check that input only contains valid IP address characters, and use safe function calls with argument arrays (like <code>execFile('ping', [host])</code>) rather than gluing text strings together in a shell.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel attack">
+      <div class="panel-header-badge">
+        <h3>Attack Vector</h3>
+        <span class="mode-badge badge-attack">Command Chaining</span>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="cmdi-host">Target Host Diagnostic Parameter</label>
+        <input type="text" id="cmdi-host" value="127.0.0.1; whoami">
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn-run-attack" onclick="runCmdi('attack')">Run Attack</button>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="terminal-title">Injected Shell Execution Output</span>
+          <button type="button" class="btn-copy-output" onclick="copyPre('cmdi-attack-out')">Copy</button>
+        </div>
+        <pre id="cmdi-attack-out"></pre>
+      </div>
+    </div>
+
+    <div class="panel defend">
+      <div class="panel-header-badge">
+        <h3>Defense & Remediation</h3>
+        <span class="mode-badge badge-defend">Safe Input Whitelist</span>
+      </div>
+      <p class="hint">Applies strict input validation: rejects any input containing shell characters (<code>; & | ` $</code>) and uses <code>execFile</code> with argument arrays to prevent shell parsing.</p>
+      
+      <div class="btn-row">
+        <button type="button" class="btn-run-defend" onclick="runCmdi('defend')">Run Defense</button>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="terminal-title">Safe Argument-Vector Result</span>
+          <button type="button" class="btn-copy-output" onclick="copyPre('cmdi-defend-out')">Copy</button>
+        </div>
+        <pre id="cmdi-defend-out"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================= -->
+<!-- 4. CSRF (Cross-Site Request Forgery) -->
+<!-- ======================================================================= -->
+<section class="tab-panel" id="csrf">
+  <div class="panel-header-block">
+    <div class="panel-title-row">
+      <h2>Cross-Site Request Forgery (CSRF)</h2>
+      <span class="owasp-tag">OWASP A01:2021 — Broken Access Control</span>
+    </div>
+    <p class="panel-desc">When an attacker tricks a logged-in user's browser into performing unwanted actions without their knowledge.</p>
+  </div>
+
+  <div class="explanation-box">
+    <div class="explanation-header" onclick="toggleAccordion('exp-csrf')">
+      <h3>How Cross-Site Request Forgery (CSRF) Works & How to Fix It</h3>
+      <span class="accordion-arrow">▾</span>
+    </div>
+    <div class="explanation-body" id="exp-csrf">
+      <p><strong>In Simple Words (What is it?):</strong> Imagine you are logged into your webmail or account in one tab. In another tab, you click a malicious link or visit an attacker's website. That malicious site secretly submits a hidden form saying <em>"update user email to attacker@evil.com"</em>. Because your browser already has your active login cookie saved, it automatically attaches the cookie, and the server thinks you approved the change!</p>
+      <ul>
+        <li><strong>Why is it dangerous?</strong> Attackers can secretly change passwords, update profile emails, transfer funds, or make unauthorized purchases on behalf of the victim.</li>
+        <li><strong>How do we fix it?</strong> Use secret Anti-CSRF Tokens. Every sensitive form must include a unique, unpredictable token that only your real website knows. Also configure cookies with <code>SameSite=Lax</code> or <code>Strict</code> so outside sites cannot use them.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel attack">
+      <div class="panel-header-badge">
+        <h3>Attack Vector</h3>
+        <span class="mode-badge badge-attack">No Token Verified</span>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="csrf-email">New Email to Force on Victim</label>
+        <input type="text" id="csrf-email" value="attacker@evil.com">
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn-run-attack" onclick="runCsrfAttack()">Run Attack</button>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="terminal-title">State Tampering Response</span>
+          <button type="button" class="btn-copy-output" onclick="copyPre('csrf-attack-out')">Copy</button>
+        </div>
+        <pre id="csrf-attack-out"></pre>
+      </div>
+    </div>
+
+    <div class="panel defend">
+      <div class="panel-header-badge">
+        <h3>Defense & Remediation</h3>
+        <span class="mode-badge badge-defend">Anti-CSRF Token</span>
+      </div>
+      <p class="hint">Endpoint requires a cryptographically random, single-use anti-CSRF token tied to the user's legitimate form session.</p>
+      
+      <div class="btn-row">
+        <button type="button" class="btn-secondary" onclick="runCsrfDefend(false)">Test Without Token</button>
+        <button type="button" class="btn-run-defend" onclick="runCsrfDefend(true)">Test With Valid Token</button>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="terminal-title">Protected Endpoint Response</span>
+          <button type="button" class="btn-copy-output" onclick="copyPre('csrf-defend-out')">Copy</button>
+        </div>
+        <pre id="csrf-defend-out"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================= -->
+<!-- 5. Weak Authentication -->
+<!-- ======================================================================= -->
+<section class="tab-panel" id="weakauth">
+  <div class="panel-header-block">
+    <div class="panel-title-row">
+      <h2>Weak Authentication & Missing Rate Limiting</h2>
+      <span class="owasp-tag">OWASP A07:2021 — Identification & Auth</span>
+    </div>
+    <p class="panel-desc">When a login page lets automated bots guess passwords repeatedly with zero delay or account lockout.</p>
+  </div>
+
+  <div class="explanation-box">
+    <div class="explanation-header" onclick="toggleAccordion('exp-weakauth')">
+      <h3>How Weak Authentication Works & How to Fix It</h3>
+      <span class="accordion-arrow">▾</span>
+    </div>
+    <div class="explanation-body" id="exp-weakauth">
+      <p><strong>In Simple Words (What is it?):</strong> Imagine a bicycle lock where a thief can try 1,000 combinations every second, and the lock never jams or alerts anyone. Without rate limiting, an automated script can test thousands of common passwords against an account until it finds the right one.</p>
+      <ul>
+        <li><strong>Why is it dangerous?</strong> Accounts using weak or common passwords can be cracked quickly through automated brute-force attacks, leading to total account takeover.</li>
+        <li><strong>How do we fix it?</strong> Add Rate Limiting (e.g. temporarily block or throttle users after 5 failed attempts), enforce strong password requirements, enable Multi-Factor Authentication (MFA), and hash passwords securely using <code>bcrypt</code> or <code>Argon2</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel attack">
+      <div class="panel-header-badge">
+        <h3>Attack Vector</h3>
+        <span class="mode-badge badge-attack">No Rate Limiting</span>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="weakauth-email">Target Email Address</label>
+        <input type="text" id="weakauth-email" value="admin@juice-sh.op">
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="weakauth-attempts">Rapid Attempts Count (1 - 15)</label>
+        <input type="number" id="weakauth-attempts" value="8" min="1" max="15">
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn-run-attack" onclick="runWeakAuthAttack()">Run Attack</button>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="terminal-title">Attack Batch Response</span>
+          <button type="button" class="btn-copy-output" onclick="copyPre('weakauth-attack-out')">Copy</button>
+        </div>
+        <pre id="weakauth-attack-out"></pre>
+      </div>
+    </div>
+
+    <div class="panel defend">
+      <div class="panel-header-badge">
+        <h3>Defense & Remediation</h3>
+        <span class="mode-badge badge-defend">Bcrypt & Rate Limiter</span>
+      </div>
+      <p class="hint">Demonstrates a protected login endpoint enforced with <code>express-rate-limit</code> (maximum 5 attempts per minute) and bcrypt hashing. Attempting 6+ rapid logins triggers an immediate HTTP <code>429 Too Many Requests</code> lockout.</p>
+      
+      <div class="input-group">
+        <label class="input-label" for="weakauth-password">Password Attempt (Try wrong password rapidly)</label>
+        <input type="text" id="weakauth-password" value="wrong-guess">
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn-run-defend" onclick="runWeakAuthDefend()">Attempt Login</button>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="terminal-title">Rate Limiter Evaluation</span>
+          <button type="button" class="btn-copy-output" onclick="copyPre('weakauth-defend-out')">Copy</button>
+        </div>
+        <pre id="weakauth-defend-out"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================= -->
+<!-- 6. Missing Headers -->
+<!-- ======================================================================= -->
+<section class="tab-panel" id="headers">
+  <div class="panel-header-block">
+    <div class="panel-title-row">
+      <h2>Missing Security Headers</h2>
+      <span class="owasp-tag">OWASP A05:2021 — Security Misconfiguration</span>
+    </div>
+    <p class="panel-desc">When a server omits standard browser safety instructions, leaving users vulnerable to framing tricks like Clickjacking.</p>
+  </div>
+
+  <div class="explanation-box">
+    <div class="explanation-header" onclick="toggleAccordion('exp-headers')">
+      <h3>How Security Headers Work & How to Fix It</h3>
+      <span class="accordion-arrow">▾</span>
+    </div>
+    <div class="explanation-body" id="exp-headers">
+      <p><strong>In Simple Words (What is it?):</strong> Every time a browser loads a webpage, the server sends instructions (headers) telling the browser what is safe to do. For example, without the <code>X-Frame-Options</code> header, an attacker can load your website invisibly inside a hidden frame (iframe) on their malicious page. When a user thinks they are clicking a button like <em>"Claim Free Gift"</em>, they are actually clicking <em>"Delete Account"</em> on the transparent site underneath. This trick is called Clickjacking.</p>
+      <ul>
+        <li><strong>Why is it dangerous?</strong> Users can be tricked into performing sensitive actions, browsers can be fooled into running untrusted files, and secure traffic can be downgraded.</li>
+        <li><strong>How do we fix it?</strong> Use standard security headers such as <code>Content-Security-Policy</code> (CSP), <code>X-Frame-Options: DENY</code>, and <code>Strict-Transport-Security</code> (HSTS) using standard middleware like <code>helmet</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel attack">
+      <div class="panel-header-badge">
+        <h3>Unhardened Target Headers</h3>
+        <span class="mode-badge badge-attack">Missing Directives</span>
+      </div>
+      <p class="hint">Fetches real response headers from the target server and checks against our recommended security baseline checklist.</p>
+
+      <div class="btn-row">
+        <button type="button" class="btn-run-attack" onclick="run('headers','attack','GET')">Check Headers</button>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="terminal-title">Target Response Header Audit</span>
+          <button type="button" class="btn-copy-output" onclick="copyPre('headers-attack-out')">Copy</button>
+        </div>
+        <pre id="headers-attack-out"></pre>
+      </div>
+    </div>
+
+    <div class="panel defend">
+      <div class="panel-header-badge">
+        <h3>Helmet Hardened Headers</h3>
+        <span class="mode-badge badge-defend">Helmet Applied</span>
+      </div>
+      <p class="hint">Audits the local endpoint with Helmet middleware applied, demonstrating a complete suite of defensive directives.</p>
+      
+      <div class="btn-row">
+        <button type="button" class="btn-run-defend" onclick="run('headers','defend','GET')">Check Hardened Headers</button>
+      </div>
+
+      <div class="terminal-card">
+        <div class="terminal-header">
+          <span class="terminal-title">Hardened Endpoint Audit</span>
+          <button type="button" class="btn-copy-output" onclick="copyPre('headers-defend-out')">Copy</button>
+        </div>
+        <pre id="headers-defend-out"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================= -->
+<!-- 7. Nmap Scanner -->
+<!-- ======================================================================= -->
+<section class="tab-panel" id="scanner">
+  <div class="panel-header-block">
+    <div class="panel-title-row">
+      <h2>Nmap Port Scanner & Attack Surface Reconnaissance</h2>
+      <span class="owasp-tag">Network Reconnaissance</span>
+    </div>
+    <p class="panel-desc">Performs real-time TCP port reconnaissance and attack surface discovery against the local test environment (<code>127.0.0.1</code> / <code>localhost</code>). Identifies listening services, maps open and closed ports, and proves which ports are strictly required to execute each OWASP vulnerability exploit.</p>
+  </div>
+
+  <div class="explanation-box">
+    <div class="explanation-header" onclick="toggleAccordion('exp-scanner')">
+      <h3>How Port Scanning & Reconnaissance Works</h3>
+      <span class="accordion-arrow">▾</span>
+    </div>
+    <div class="explanation-body" id="exp-scanner">
+      <p><strong>In Simple Words (What is it?):</strong> Think of a port scan like checking all doors and windows in a building to see which ones are open. In networking, each service listens on a numbered port (like port 80 for web, port 3000 for app servers). Scanning tells security testers which services are reachable.</p>
+      <ul>
+        <li><strong>Target Web Port (Port 3000):</strong> The OWASP Juice Shop web application listens on HTTP port 3000. All active application exploits (XSS, SQLi, CMDi, CSRF, Weak Auth, Headers) directly target endpoints on this port.</li>
+        <li><strong>Assessment Controller Port (Port 8080):</strong> The EHVA CyberLab dashboard listens on port 8080 to orchestrate payloads, capture telemetry, and test defense mitigations.</li>
+        <li><strong>Closed Ports (21, 22, 80, 443, 3306, 27017):</strong> Direct network sockets for FTP, SSH, standard web, and databases are closed. Web exploits operate strictly at HTTP Layer 7 against Port 3000.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Nmap Query Configurator Card -->
+  <div class="nmap-config-card">
+    <div class="nmap-config-header">
+      <div class="nmap-header-left">
+        <span class="nmap-logo">📡</span>
+        <div>
+          <h3 style="margin:0;font-size:1.1rem;color:var(--text);">Nmap Reconnaissance Query Configurator</h3>
+          <p class="nmap-subtitle">Select or customize the Nmap scan query to inspect the target host</p>
+        </div>
+      </div>
+      <div class="nmap-target-badge">
+        <span class="ping-indicator"></span> Target: <strong>127.0.0.1 (Juice Box / localhost)</strong>
+      </div>
+    </div>
+
+    <div class="nmap-query-controls">
+      <div class="nmap-control-group">
+        <label for="nmap-profile-select"><strong>Select Nmap Recon Query:</strong></label>
+        <select id="nmap-profile-select" class="nmap-select" onchange="handleNmapProfileChange(this.value)">
+          <option value="full" selected>1. Full Attack Surface Recon Scan (-sT -sV -Pn -p 21,22,80,443,3000,3306,8080,27017)</option>
+          <option value="target">2. Juice Shop Port 3000 Deep Service Probe (-sV -sC -Pn -p 3000)</option>
+          <option value="scripts">3. OWASP Web Vulnerability & Script Sweep (--script http-enum,http-headers,http-methods)</option>
+          <option value="top100">4. Top 100 Common Ports Recon Sweep (-sT -Pn -T4 --top-ports 100)</option>
+          <option value="fast">5. Fast Attack Port Verification (-p 3000,8080 -Pn)</option>
+        </select>
+      </div>
+
+      <div class="nmap-command-preview-box">
+        <div class="cmd-preview-label">Active Command Line Query:</div>
+        <div class="cmd-preview-content">
+          <span class="cmd-prompt">$</span>
+          <code id="nmap-cmd-string">nmap -sT -sV -Pn -p 21,22,80,443,3000,3306,8080,27017 127.0.0.1</code>
+          <button type="button" class="btn-copy-cmd" onclick="copyNmapCommand()" title="Copy command">📋 Copy Query</button>
+        </div>
+        <div class="cmd-flags-legend" id="nmap-flags-legend">
+          <span class="flag-chip"><code>-sT</code> TCP Connect Scan</span>
+          <span class="flag-chip"><code>-sV</code> Version Detection</span>
+          <span class="flag-chip"><code>-Pn</code> Skip Ping Probe</span>
+          <span class="flag-chip"><code>-p</code> Target Port List</span>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top: 1.25rem;">
+        <button type="button" class="btn-run-attack" id="btn-run-scan" onclick="runScan()">
+          📡 Execute Nmap Recon Scan
+        </button>
+        <button type="button" class="btn-preview" onclick="openJuiceShopPreview('scanner')">
+          🎯 View Radar & Port Topology
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Port Status & Attack Surface Matrix Grid -->
+  <div class="nmap-matrix-section">
+    <div class="matrix-header">
+      <h3 style="margin:0;font-size:1.05rem;color:var(--text);">Target Port Status & Attack Vector Requirements</h3>
+      <span class="matrix-hint">Port 3000 is open and strictly required for all 8 OWASP web attack vectors</span>
+    </div>
+    
+    <div class="nmap-ports-grid" id="nmap-ports-grid">
+      <!-- Port 3000: OPEN & REQUIRED -->
+      <div class="port-card port-open port-required" onclick="filterPortInfo(3000)">
+        <div class="port-card-top">
+          <span class="port-num">3000/tcp</span>
+          <span class="port-badge open">OPEN</span>
+        </div>
+        <div class="port-service">juice-shop-web (OWASP Juice Shop)</div>
+        <div class="port-requirement"><strong>CRITICAL TARGET:</strong> Required for ALL 8 OWASP web attacks (XSS, SQLi, IDOR, Traversal, CMDi, CSRF, Weak Auth, Headers).</div>
+        <div class="port-req-tag">⭐ REQUIRED FOR ALL ATTACKS</div>
+      </div>
+
+      <!-- Port 8080: OPEN & CONTROLLER -->
+      <div class="port-card port-open" onclick="filterPortInfo(8080)">
+        <div class="port-card-top">
+          <span class="port-num">8080/tcp</span>
+          <span class="port-badge open">OPEN</span>
+        </div>
+        <div class="port-service">security-dashboard (EHVA CyberLab)</div>
+        <div class="port-requirement"><strong>CONTROLLER:</strong> Dispatches exploits, captures telemetry, and verifies mitigations.</div>
+        <div class="port-req-tag" style="background:#e0f2fe;color:#0369a1;">🛡️ ASSESSMENT CONTROLLER</div>
+      </div>
+
+      <!-- Port 21: CLOSED -->
+      <div class="port-card port-closed" onclick="filterPortInfo(21)">
+        <div class="port-card-top">
+          <span class="port-num">21/tcp</span>
+          <span class="port-badge closed">CLOSED</span>
+        </div>
+        <div class="port-service">ftp (File Transfer Protocol)</div>
+        <div class="port-requirement"><strong>NOT NEEDED:</strong> Path traversal targets HTTP route <code>/ftp/:file</code> on port 3000 directly.</div>
+      </div>
+
+      <!-- Port 22: CLOSED -->
+      <div class="port-card port-closed" onclick="filterPortInfo(22)">
+        <div class="port-card-top">
+          <span class="port-num">22/tcp</span>
+          <span class="port-badge closed">CLOSED</span>
+        </div>
+        <div class="port-service">ssh (Secure Shell)</div>
+        <div class="port-requirement"><strong>NOT NEEDED:</strong> Remote management disabled; attacks operate via web layer.</div>
+      </div>
+
+      <!-- Port 80: CLOSED -->
+      <div class="port-card port-closed" onclick="filterPortInfo(80)">
+        <div class="port-card-top">
+          <span class="port-num">80/tcp</span>
+          <span class="port-badge closed">CLOSED</span>
+        </div>
+        <div class="port-service">http (Standard Web)</div>
+        <div class="port-requirement"><strong>NOT NEEDED:</strong> Lab web application binds directly to custom port 3000.</div>
+      </div>
+
+      <!-- Port 443: CLOSED -->
+      <div class="port-card port-closed" onclick="filterPortInfo(443)">
+        <div class="port-card-top">
+          <span class="port-num">443/tcp</span>
+          <span class="port-badge closed">CLOSED</span>
+        </div>
+        <div class="port-service">https (TLS Web Server)</div>
+        <div class="port-requirement"><strong>NOT NEEDED:</strong> Local isolated test container operates plaintext HTTP on 3000.</div>
+      </div>
+
+      <!-- Port 3306: CLOSED -->
+      <div class="port-card port-closed" onclick="filterPortInfo(3306)">
+        <div class="port-card-top">
+          <span class="port-num">3306/tcp</span>
+          <span class="port-badge closed">CLOSED</span>
+        </div>
+        <div class="port-service">mysql (Relational Database)</div>
+        <div class="port-requirement"><strong>NOT NEEDED:</strong> Juice Shop uses embedded SQLite inside port 3000. SQLi exploits web API.</div>
+      </div>
+
+      <!-- Port 27017: CLOSED -->
+      <div class="port-card port-closed" onclick="filterPortInfo(27017)">
+        <div class="port-card-top">
+          <span class="port-num">27017/tcp</span>
+          <span class="port-badge closed">CLOSED</span>
+        </div>
+        <div class="port-service">mongodb (NoSQL Daemon)</div>
+        <div class="port-requirement"><strong>NOT NEEDED:</strong> No external database daemon needed for web application exploits.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terminal Output Card -->
+  <div class="terminal-card" style="margin-top: 1.5rem;">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="term-dot red"></span>
+        <span class="term-dot yellow"></span>
+        <span class="term-dot green"></span>
+      </div>
+      <span class="terminal-title">Nmap Scan Output & Attack Analysis Terminal</span>
+      <div class="terminal-actions">
+        <button type="button" class="btn-copy-output" onclick="copyPre('scanner-out')">Copy Output</button>
+      </div>
+    </div>
+    <pre id="scanner-out">Click "Execute Nmap Recon Scan" above to run port discovery and generate the attack vector mapping analysis.</pre>
+  </div>
+</section>
+
+<!-- ======================================================================= -->
+<!-- 11. Report / Run History -->
+<!-- ======================================================================= -->
+<section class="tab-panel" id="report">
+  <div class="panel-header-block">
+    <div class="panel-title-row">
+      <h2>Vulnerability Assessment Report & Audit Log</h2>
+      <span class="owasp-tag">Audit Trail & Compliance</span>
+    </div>
+    <p class="panel-desc">Full persistent chronological log of all attack vectors and defensive remediations tested during this assessment session.</p>
+  </div>
+
+  <div class="report-header-controls">
+    <div class="report-controls-left">
+      <button type="button" class="btn-secondary" onclick="loadReport()">🔄 Refresh Log</button>
+      <button type="button" class="btn-secondary" onclick="clearReport()">🗑️ Clear Log</button>
+    </div>
+    <div class="report-controls-right">
+      <button type="button" class="btn-secondary" onclick="exportReportJson()">📥 Export JSON</button>
+      <button type="button" class="btn-secondary" onclick="exportReportCsv()">📊 Download CSV</button>
+    </div>
+  </div>
+
+  <div class="report-table-wrapper">
+    <table id="report-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Module</th>
+          <th>Mode</th>
+          <th>Payload / Action</th>
+          <th>Result Summary</th>
+          <th>Vulnerable?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Filled dynamically -->
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<!-- ======================================================================= -->
+<!-- OWASP Juice Shop Target Preview Modal / Window -->
+<!-- ======================================================================= -->
+<div id="juice-preview-modal" class="juice-modal" aria-hidden="true">
+  <div class="juice-modal-backdrop" onclick="closeJuiceShopPreview()"></div>
+  <div class="juice-window" id="juice-window">
+    
+    <!-- Window Chrome Header -->
+    <div class="juice-window-header">
+      <div class="window-controls">
+        <span class="ctrl-dot dot-close" onclick="closeJuiceShopPreview()" title="Close"></span>
+        <span class="ctrl-dot dot-min" onclick="closeJuiceShopPreview()" title="Minimize"></span>
+        <span class="ctrl-dot dot-dock" onclick="toggleJuiceShopDock()" title="Toggle Dock / Center"></span>
+      </div>
+      <div class="juice-url-bar">
+        <span>🔒</span>
+        <span class="url-text" id="juice-url-display">http://localhost:3000/#/search</span>
+      </div>
+      <div class="juice-header-actions">
+        <div class="view-switch-btn-group">
+          <button class="view-btn active" id="btn-view-spotlight" onclick="switchPreviewView('spotlight')">🎯 Target Spotlight</button>
+          <button class="view-btn" id="btn-view-live" onclick="switchPreviewView('live')">🌐 Live App</button>
+        </div>
+        <button class="icon-btn" onclick="replayAttackAnimation()" title="Replay attack animation">↺ Replay</button>
+        <button class="icon-btn" onclick="toggleJuiceShopDock()" id="btn-dock-toggle" title="Dock to right side">◫ Dock</button>
+        <a class="icon-btn external-link" href="http://localhost:3000" target="_blank" rel="noreferrer" title="Open in new window">↗ Open</a>
+        <button class="icon-btn close-x" onclick="closeJuiceShopPreview()" title="Close">✕</button>
+      </div>
+    </div>
+
+    <!-- Attack HUD Banner -->
+    <div class="juice-attack-hud" id="juice-attack-hud">
+      <div class="hud-status-badge" id="hud-badge">🎯 TARGET LOCATED</div>
+      <div class="hud-details">
+        <div class="hud-title" id="hud-title">Targeting Component</div>
+        <div class="hud-desc" id="hud-desc">Showing where the payload enters and executes inside the application.</div>
+      </div>
+      <div class="hud-actions">
+        <span class="hud-pill" id="hud-target-element">Target: <code>&lt;input id="searchQuery"&gt;</code></span>
+      </div>
+    </div>
+
+    <!-- Body Container -->
+    <div class="juice-window-body">
+      
+      <!-- 1. DYNAMIC TARGET SPOTLIGHT VIEW -->
+      <div class="preview-view active" id="view-spotlight">
+        <div class="mock-juice-shop" id="mock-juice-shop-app">
+          
+          <!-- Mock Navbar -->
+          <nav class="mock-navbar">
+            <div class="mock-nav-brand" onclick="navigateToJuicePage('store')" title="Go to Products">
+              <span>🍹</span>
+              <span>OWASP Juice Shop</span>
+            </div>
+            
+            <div class="mock-search-container" id="mock-search-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="mock-search-input" placeholder="Search..." oninput="handleJuiceSearchInput(this.value)">
+              <button class="search-clear-btn" id="mock-search-clear" onclick="clearJuiceSearch()" title="Clear">✕</button>
+              <div class="target-reticle" id="reticle-search">
+                <span class="reticle-label">🎯 ATTACK TARGET: Search Bar (XSS)</span>
+              </div>
+            </div>
+            
+            <div class="mock-nav-right">
+              <span class="mock-nav-btn" onclick="navigateToJuicePage('store')">Score Board</span>
+              <span class="mock-nav-btn" id="mock-diag-btn" onclick="navigateToJuicePage('cmdi')">Diagnostics</span>
+              <div class="nav-account-dropdown-wrapper">
+                <button class="mock-nav-btn" id="mock-account-btn" onclick="toggleJuiceAccountMenu()">
+                  <span id="mock-account-label">Account</span>
+                  <span>▾</span>
+                </button>
+                <div class="account-dropdown-menu" id="mock-account-dropdown">
+                  <div class="dropdown-item" id="menu-item-login" onclick="navigateToJuicePage('login')">Login</div>
+                  <div class="dropdown-item" id="menu-item-profile" onclick="navigateToJuicePage('profile')">Profile</div>
+                  <div class="dropdown-item text-danger" id="menu-item-logout" onclick="performJuiceLogout()" style="display:none;">Logout</div>
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          <!-- Floating Attack Reflection Alert -->
+          <div class="attack-reflection-alert" id="attack-reflection-banner" style="display:none;">
+            <div class="reflection-icon" id="reflection-icon">💥</div>
+            <div class="reflection-content">
+              <div class="reflection-title" id="reflection-title">Attack Reflected Live</div>
+              <div class="reflection-msg" id="reflection-msg">The attack payload successfully triggered a dynamic state change.</div>
+            </div>
+            <button class="reflection-dismiss" onclick="dismissReflectionBanner()">✕</button>
+          </div>
+
+          <!-- Main App Pages -->
+          <div class="mock-content" id="mock-content-area">
+
+            <!-- PAGE: STORE CATALOG (Home / Search / XSS) -->
+            <div class="mock-page mock-page-store active" id="page-juice-store">
+              <div class="mock-banner">
+                <div class="banner-badge">Official Store</div>
+                <h3>Welcome to OWASP Juice Shop!</h3>
+                <p>The deliberately vulnerable web training application.</p>
+              </div>
+
+              <!-- Search Results Header (DOM XSS Target) -->
+              <div class="search-reflection-card" id="juice-search-results-card" style="display:none;">
+                <div class="search-results-title">
+                  <span>Search Results for: </span>
+                  <span class="raw-injected-dom" id="juice-dom-xss-container"></span>
+                </div>
+                <div class="xss-execution-callout" id="juice-xss-callout">
+                  <span class="badge-tag">💥 DOM XSS EXECUTION</span>
+                  <span>Query passed into <code>innerHTML</code> without escaping! The injected script/tag was parsed and executed in the browser DOM.</span>
+                </div>
+              </div>
+
+              <!-- Product Grid -->
+              <div class="product-grid-header">
+                <h4>All Products</h4>
+                <span class="product-count" id="juice-product-count">12 items</span>
+              </div>
+              <div class="mock-product-grid" id="juice-product-grid"></div>
+            </div>
+
+            <!-- PAGE: LOGIN FORM (SQLi & Weak Auth Target) -->
+            <div class="mock-page mock-page-login" id="page-juice-login">
+              <div class="mock-login-card">
+                <div class="login-header">
+                  <div class="juice-icon-circle">🔒</div>
+                  <h3>Customer Login</h3>
+                  <p class="mock-sub">Log in with your Juice Shop credentials</p>
+                </div>
+
+                <div class="mock-form-group" id="group-login-email">
+                  <label for="mock-login-email">Email</label>
+                  <div class="input-with-reticle">
+                    <input type="text" id="mock-login-email" placeholder="Email address" value="">
+                    <div class="target-reticle" id="reticle-sqli">
+                      <span class="reticle-label">🎯 ATTACK TARGET: SQL Injection Input</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mock-form-group" id="group-login-pass">
+                  <label for="mock-login-pass">Password</label>
+                  <div class="input-with-reticle">
+                    <input type="password" id="mock-login-pass" placeholder="Password" value="">
+                    <div class="target-reticle" id="reticle-weakauth">
+                      <span class="reticle-label">🎯 ATTACK TARGET: Brute Force Input</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button class="mock-btn-primary" id="mock-login-submit" onclick="submitJuiceLogin()">
+                  <span id="mock-login-btn-text">Log in</span>
+                </button>
+
+                <!-- Dynamic SQL Query Breakdown -->
+                <div class="live-sqli-inspector" id="mock-sqli-inspector" style="display:none;">
+                  <div class="inspector-badge">💥 SQL Injection Query Evaluation</div>
+                  <div class="query-code-preview">
+                    <code>SELECT * FROM Users WHERE email = '<span class="highlight-sqli" id="live-sqli-code">' OR 1=1--</span>' AND password = '...'</code>
+                  </div>
+                </div>
+
+                <!-- Weak Auth Flood Meter -->
+                <div class="weakauth-live-flood" id="mock-weakauth-flood" style="display:none;">
+                  <div class="flood-header">
+                    <span>Brute-force password storm</span>
+                    <span id="weakauth-counter-badge">0 / 8 attempts</span>
+                  </div>
+                  <div class="weakauth-meter">
+                    <div class="meter-bar" id="mock-weakauth-bar"></div>
+                  </div>
+                  <div class="mock-weakauth-log" id="mock-weakauth-log"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PAGE: USER PROFILE (CSRF Target) -->
+            <div class="mock-page mock-page-profile" id="page-juice-profile">
+              <div class="mock-profile-card">
+                <div class="profile-header">
+                  <div class="user-avatar-circle">👤</div>
+                  <h3>Victim User Profile</h3>
+                  <p class="mock-sub">Manage account settings</p>
+                </div>
+
+                <div class="csrf-attack-indicator" id="mock-csrf-indicator" style="display:none;">
+                  <strong>🚨 Unauthorized Forged Request Intercepted!</strong>
+                  <p>Attacker-controlled page changed this profile email using stored browser cookies with zero token check.</p>
+                </div>
+
+                <div class="mock-form-group">
+                  <label>Registered Email Address</label>
+                  <div class="input-with-reticle">
+                    <input type="text" id="mock-profile-email" value="victim@juice-sh.op">
+                    <div class="target-reticle" id="reticle-csrf">
+                      <span class="reticle-label">🎯 ATTACK TARGET: State-Changing Input</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="csrf-diff-card" id="mock-csrf-diff" style="display:none;">
+                  <div>Original: <span style="text-decoration:line-through;color:#94a3b8">victim@juice-sh.op</span></div>
+                  <div>Forged New: <strong id="csrf-diff-new" style="color:#dc2626">attacker@evil.com</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PAGE: COMMAND INJECTION TERMINAL -->
+            <div class="mock-page mock-page-cmdi" id="page-juice-cmdi">
+              <div class="mock-card-generic" id="card-spotlight-cmdi">
+                <div class="basket-header-pill">
+                  <strong>Diagnostic Host Ping Tool</strong>
+                  <span class="badge-tag">RCE COMPROMISE</span>
+                </div>
+
+                <div class="mock-form-group">
+                  <label for="mock-cmdi-input">Network Diagnostic Host Utility Input:</label>
+                  <div class="input-with-reticle">
+                    <input type="text" id="mock-cmdi-input" value="127.0.0.1; whoami">
+                    <div class="target-reticle" id="reticle-cmdi">
+                      <span class="reticle-label">🎯 ATTACK TARGET: Shell Command Injection</span>
+                    </div>
+                  </div>
+                </div>
+
+                <p class="mock-sub">Injected command separator <code>;</code> or <code>&&</code> executed arbitrary shell commands with process privileges.</p>
+                <div class="file-leak-terminal" id="cmdi-terminal-preview">
+                  PING 127.0.0.1 (127.0.0.1): 56 data bytes
+                  64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=0.045 ms
+                  [EXECUTING INJECTED COMMAND: "whoami"]
+                  node-app-runner (uid=1000 gid=1000 groups=1000)
+                </div>
+              </div>
+            </div>
+
+            <!-- PAGE: CLICKJACKING & HEADERS SANDBOX -->
+            <div class="mock-page mock-page-headers" id="page-juice-headers">
+              <div class="clickjack-demo-card">
+                <div class="demo-header">
+                  <h3>Missing X-Frame-Options (Clickjacking Demonstration)</h3>
+                  <p class="mock-sub">Because the target doesn't send <code>X-Frame-Options</code>, an attacker page frames it and hijacks clicks.</p>
+                </div>
+
+                <div class="clickjack-sandbox-frame">
+                  <div class="decoy-attacker-layer" id="clickjack-attacker-layer">
+                    <div class="decoy-content">
+                      <h4>🎁 CONGRATULATIONS! You won a FREE iPhone!</h4>
+                      <button class="decoy-button" onclick="handleClickjackDecoy()">👉 CLICK HERE TO CLAIM YOUR PRIZE! 👈</button>
+                    </div>
+                  </div>
+                  <div class="framed-victim-app">
+                    <div class="victim-navbar">🍹 OWASP Juice Shop - Sensitive Action</div>
+                    <div class="victim-body">
+                      <p>Transfer 10,000 Juice CTF Points to User #99</p>
+                      <button class="victim-button" id="victim-action-btn">CONFIRM TRANSFER</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="font-size:0.8rem; color:#64748b; margin-top:0.6rem;">
+                  <label for="clickjack-opacity">Attacker Layer Transparency (Reveal the Trap):</label>
+                  <input type="range" id="clickjack-opacity" min="0" max="100" value="70" oninput="updateClickjackOpacity(this.value)">
+                </div>
+              </div>
+            </div>
+
+            <!-- PAGE: SCANNER RECON -->
+            <div class="mock-page mock-page-scanner" id="page-juice-scanner">
+              <div class="mock-scanner-card">
+                <h3>Juice Box Target Network Reconnaissance</h3>
+                <p class="mock-sub">Active TCP scan & service topology mapped to local target (127.0.0.1:3000)</p>
+                
+                <!-- Live Sonar Radar Animation Stage -->
+                <div class="radar-display-wrapper">
+                  <div class="sonar-circle">
+                    <div class="sonar-sweep-beam"></div>
+                    <div class="radar-blip blip-3000" title="Port 3000: OWASP Juice Shop (OPEN)">
+                      <span class="radar-blip-label">Port 3000 [OPEN • TARGET]</span>
+                    </div>
+                    <div class="radar-blip blip-8080" title="Port 8080: CyberLab Controller (OPEN)">
+                      <span class="radar-blip-label">Port 8080 [OPEN • CONTROLLER]</span>
+                    </div>
+                  </div>
+                  <div style="margin-top:1rem;font-family:var(--font-mono);font-size:0.75rem;color:#34d399;text-align:center;">
+                    RADAR SWEEP ACTIVE • TARGET SOCKET 127.0.0.1:3000 LOCKED (HTTP/1.1)
+                  </div>
+                </div>
+
+                <div class="scanner-host-diagram" style="margin-top:1.25rem;">
+                  <div class="diagram-node">
+                    <div class="node-icon">🛡️</div>
+                    <div class="node-name">Dashboard Controller</div>
+                    <div class="node-ip">127.0.0.1:8080</div>
+                  </div>
+                  <div class="diagram-arrow">➔ TCP Port 3000 ➔</div>
+                  <div class="diagram-node">
+                    <div class="node-icon">🍹</div>
+                    <div class="node-name">Juice Box Web App</div>
+                    <div class="node-ip">Port 3000 (OPEN)</div>
+                  </div>
+                </div>
+
+                <div style="margin-top:1rem;background:#1e293b;border-radius:6px;padding:12px;font-size:0.78rem;color:#cbd5e1;">
+                  <strong style="color:#f87171;">Attack Surface Verdict:</strong>
+                  Port 3000 is the critical attack vector. All 6 OWASP web attack payloads (XSS, SQLi, CMDi, CSRF, Weak Auth, Headers) execute against endpoints on this port.
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Material Snackbar Toast Notification -->
+          <div class="juice-snackbar" id="juice-snackbar">
+            <span class="snackbar-msg" id="juice-snackbar-text">Notification message</span>
+          </div>
+
+          <!-- Browser Alert Popup for XSS Execution -->
+          <div class="mock-browser-alert-overlay" id="mock-xss-alert">
+            <div class="mock-browser-alert-dialog">
+              <div class="alert-dialog-header">
+                <span>localhost:3000 says</span>
+              </div>
+              <div class="alert-dialog-body" id="mock-alert-text">
+                XSS
+              </div>
+              <div class="alert-dialog-actions">
+                <button class="alert-btn-ok" onclick="dismissMockXssAlert()">OK</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 2. LIVE APP VIEW (Direct Iframe) -->
+      <div class="preview-view" id="view-live">
+        <div class="live-frame-toolbar">
+          <div class="live-status-indicator">
+            <span class="live-dot" id="live-connection-dot"></span>
+            <span class="live-status-text" id="live-connection-text">Connecting to Juice Shop at http://localhost:3000...</span>
+          </div>
+          <div class="live-actions">
+            <button class="btn-secondary" onclick="reloadLiveJuiceShop()">🔄 Reload Frame</button>
+            <a class="btn-secondary" href="http://localhost:3000" target="_blank" rel="noreferrer">↗ Open Direct</a>
+          </div>
+        </div>
+        <div class="live-frame-container">
+          <iframe id="live-juice-iframe" src="about:blank" title="OWASP Juice Shop Live Frame"></iframe>
+          <div class="live-frame-fallback" id="live-frame-fallback">
+            <div class="fallback-icon">🍹</div>
+            <h3>OWASP Juice Shop Live Service</h3>
+            <p id="live-fallback-msg">Juice Shop is reachable at <code>http://localhost:3000</code> when running in Docker.</p>
+            <button class="btn-secondary" style="margin-top:1rem;" onclick="switchPreviewView('spotlight')">Go to Target Spotlight View</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
